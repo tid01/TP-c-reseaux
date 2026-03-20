@@ -115,5 +115,9 @@ void main (int argc, char **argv)
 			// server.sin_family = AF_INET;
 			// server.sin_port = htons( 8080 );
 		}	
+		else{
+			int sock = socket(AF_INET,SOCK_DGRAM,IPPROTO_UDP);
+
+		}
 	}
 }

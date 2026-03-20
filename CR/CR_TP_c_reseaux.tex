@@ -1,0 +1,204 @@
+\documentclass[A4paper,11pt]{report}
+
+% ================== PACKAGES ==================
+\usepackage{lmodern}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+
+\usepackage[Conny]{fncychap}
+\usepackage{titlesec}
+
+\usepackage{fancybox}
+\usepackage[top=2cm, bottom=2cm, left=2cm, right=2cm]{geometry}
+\usepackage{multicol}
+\setlength{\columnsep}{1cm}
+
+\usepackage{amsmath,amsfonts,amsthm,amssymb,mathtools}
+\usepackage{enumitem}
+\usepackage{framed}
+\usepackage{graphicx}
+
+\usepackage[section]{placeins}
+
+\makeatletter
+\setlength{\@fptop}{0pt}
+\makeatother
+
+\usepackage{fancyhdr}
+\usepackage{tikz}
+\usepackage{circuitikz}
+
+\usepackage{fourier-orns}
+\usepackage{lastpage}
+\usepackage{mwe}
+\usepackage{afterpage}
+
+\usepackage{hyperref} % toujours en dernier
+
+\usepackage{listings}
+
+
+% --- Couleurs Ubuntu ---
+\definecolor{ubuntubg}{RGB}{48,10,36}
+\definecolor{ubuntutext}{RGB}{238,238,236}
+\definecolor{ubuntuorange}{RGB}{233,84,32}
+\definecolor{ubuntugreen}{RGB}{78,154,6}
+\definecolor{ubuntugray}{RGB}{136,138,133}
+
+% --- Couleurs VSCode (dark+) ---
+\definecolor{vscodebg}{RGB}{30,30,30}
+\definecolor{vscodetext}{RGB}{212,212,212}
+\definecolor{vscodeblue}{RGB}{86,156,214}
+\definecolor{vscodegreen}{RGB}{106,153,85}
+\definecolor{vscodeorange}{RGB}{206,145,120}
+\definecolor{vscodepurple}{RGB}{197,134,192}
+\definecolor{vscodegray}{RGB}{128,128,128}
+
+\lstdefinestyle{ubuntu}{
+    backgroundcolor=\color{ubuntubg},   
+    basicstyle=\ttfamily\footnotesize\color{ubuntutext},
+    keywordstyle=\color{ubuntuorange},
+    commentstyle=\color{ubuntugreen},
+    stringstyle=\color{ubuntugray},
+    numbers=none,
+    breaklines=true,
+    breakatwhitespace=false,
+    keepspaces=true,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    frame=single,
+    rulecolor=\color{ubuntugray},
+    tabsize=2
+}
+
+\lstdefinestyle{vscodeC}{
+    language=C,
+    backgroundcolor=\color{vscodebg},
+    basicstyle=\ttfamily\footnotesize\color{vscodetext},
+    keywordstyle=\color{vscodeblue}\bfseries,
+    commentstyle=\color{vscodegreen}\itshape,
+    stringstyle=\color{vscodeorange},
+    numberstyle=\tiny\color{vscodegray},
+    numbers=left,
+    stepnumber=1,
+    numbersep=10pt,
+    breaklines=true,
+    breakatwhitespace=false,
+    keepspaces=true,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    frame=none,
+    rulecolor=\color{vscodegray},
+    tabsize=4
+}
+
+\lstset{style=vscodeC}
+
+% ================== TIKZ STYLE ==================
+\tikzset{every node/.style={font=\large}}
+
+% ================== NUMEROTATION ==================
+\renewcommand{\thesection}{\Roman{section}.}
+\renewcommand{\thesubsection}{Q\arabic{subsection}.}
+\renewcommand{\thesubsubsection}{\arabic{subsubsection}.}
+
+\setcounter{secnumdepth}{3}
+
+% ================== FOOTER DECO ==================
+\renewcommand\footrule{%
+\hrulefill}
+
+% ================== STYLE PLAIN ==================
+\fancypagestyle{plain}{%
+  \fancyhf{}
+  \fancyfoot[C]{\thepage\ of \pageref{LastPage}}
+  \renewcommand{\headrulewidth}{0pt}
+  \renewcommand{\footrulewidth}{0.4pt}
+}
+
+% ================== STYLE FANCY ==================
+\fancypagestyle{fancy}{%
+  \fancyhf{}
+  \fancyfoot[C]{\thepage\ / \pageref{LastPage}}
+  \fancyhead[L]{BRIENT Tidiane \\ NYTUN Jesper}
+  \fancyhead[C]{\textit{ TP C et réseaux }}
+  \fancyhead[R]{3 IMACS D}
+  \renewcommand{\headrulewidth}{0.4pt}
+  \renewcommand{\footrulewidth}{0.4pt}
+}
+
+\pagestyle{fancy}
+\setlength{\fboxsep}{0.5cm}
+
+
+
+
+\newcommand{\itemb}{\item[$\bullet$ ] }
+% ================== DOCUMENT ==================
+\begin{document}
+
+\section*{\huge \centering Compte-Rendu de TP Langage C et Réseaux}
+
+\vspace{2cm}
+\textbf{Intro rapide:} Ce TP met en jeu l'implémentation de la fonction tsock, permettant l'envoi de messages via internet. 
+
+\section{Implémentation de tsock-v1}
+
+\subsubsection{Prise en compte de l'option -u}
+
+Une fois le fichier \textit{tsock-v0.c} dupliqué et rennomé en \textit{tsock-v1.c} , on commence par ajouter une variable \textit{protocole} initialisée à 0 qui nous indiquera le protocole utilisé:
+\begin{itemize}
+    \itemb 1 si le protocole utilisé est UDP (-u présent)
+    \itemb 0 si TCP est utilisé (option par défaut, voir partie 2 du travail)
+\end{itemize}
+
+Pour cela, on rajoute dans la première boucle while:
+
+\begin{lstlisting}
+    case 'u':
+			protocole =1;		
+			break;     
+
+\end{lstlisting}
+
+de manière à affecter la valeur 1 à protocole lorsque UDP est utilisé.\\
+
+
+Ensuite, on ajoute un if à la fin du programme permettant, si un $-u$ est présent, d'éxécuter les actions relatives au protocole UDP dans le cas d'une source ou dans le cas d'un puit, soit:
+\begin{itemize}
+    \itemb Dans le cas d'une source:
+    \begin{itemize}
+        \item créer un socket UDP;
+        \item construire l'adresse du socket cible;
+        \item envoi des données.
+    \end{itemize}
+    \itemb Dans le cas d'un puits:
+    \begin{itemize}
+        \item créer un socket UDP;
+        \item assigner une adresse au socket crée;
+        \item se mettre en écoute.
+    \end{itemize}
+\end{itemize} 
+
+
+
+Ce qui se traduit en code par:
+
+\begin{lstlisting}
+    if(protocole ==1){
+		if(source==1){
+			int sock = socket(AF_INET,SOCK_DGRAM,IPPROTO_UDP);
+            /*Ajouter le code*/
+		}	
+        else{
+			int sock = socket(AF_INET,SOCK_DGRAM,IPPROTO_UDP);
+        /*Ajouter le code*/
+		}
+	}
+\end{lstlisting}
+
+
+
+\end{document}
